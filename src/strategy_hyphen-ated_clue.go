@@ -70,14 +70,7 @@ func (d *Hyphenated) GetClueInterpretation(g *Game, a *Action) int {
 func (d *Hyphenated) UpdateChop(g *Game, a *Action) {
 	p := g.Players[a.Target]
 	for i, c := range p.Hand {
-		hasPositiveClue := false
-		for _, clue := range c.Clues {
-			if clue.Positive {
-				hasPositiveClue = true
-				break
-			}
-		}
-		if !hasPositiveClue {
+		if !c.IsClued() {
 			d.Players[a.Target].Chop = i
 		}
 	}
@@ -106,7 +99,7 @@ func (d *Hyphenated) CheckPlayClues(g *Game) *Action {
 			}
 		}
 		// Color clues
-		for j, _ := range variants[g.Variant].ClueColors {
+		for j := range variants[g.Variant].ClueColors {
 			clue := d.CheckViableClue(g, i, clueTypeColor, j)
 			if clue != nil {
 				viableClues = append(viableClues, clue)
@@ -159,7 +152,7 @@ func (d *Hyphenated) CheckViableClue(g *Game, i int, j int, k int) *PossibleClue
 
 	// Check to see if the card would misplay if we clued it
 	c := d.GetClueFocus(g, i, clue)
-	if !c.IsPlayable(g) {
+	if c == nil || !c.IsPlayable(g) {
 		return nil
 	}
 

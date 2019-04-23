@@ -72,6 +72,27 @@ func HyphenatedActionHappened(s *Strategy, g *Game, a *Action) {
 			focusedCard := d.GetClueFocus(g, a.Target, a.Clue)
 			d.Cards[focusedCard.Order].Playable = true
 		}
+		// Update all playable cards based on good touch principle
+		// TODO 1: this must also be done after a card is played
+		// TODO 2: don't mark a card as playable if it is known trash
+		for _, c := range p.Hand {
+			if c.IsClued() && !d.Cards[c.Order].Playable {
+				isplayable := true
+				for _, s := range c.PossibleSuits {
+					for _, r := range c.PossibleRanks {
+						if r > g.Stacks[s.Index]+1 {
+							log.Info(c.Name() + " is not playable.")
+							isplayable = false
+							break
+						}
+					}
+				}
+				if isplayable {
+					// log.Info(c.Name() + " is playable." + strconv.FormatBool(c.IsClued()))
+					d.Cards[c.Order].Playable = true
+				}
+			}
+		}
 
 		d.UpdateChop(g, a)
 	}
